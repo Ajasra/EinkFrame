@@ -371,6 +371,8 @@ def get_last_created_folder(directory_path):
         return None
     # Get the creation time of each directory and find the most recent one
     last_created_folder = max(directories, key=lambda d: os.path.getctime(os.path.join(directory_path, d)))
+    process_all_images_in_folder(os.path.join(directory_path, last_created_folder))
+
     return os.path.join(directory_path, last_created_folder)
 
 

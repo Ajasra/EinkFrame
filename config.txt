@@ -1,0 +1,8 @@
+{
+    "mode": "US",
+    "refresh_rate": "5",
+    "random": true,
+    "url_image": "http://eink.vasily.onl/images/current/img.jpg",
+    "max_modes": 2,
+    "net_image_show": 1
+}

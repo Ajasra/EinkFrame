@@ -1,0 +1,14 @@
+[Unit]
+Description=Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/vasily/eink/e-Paper/RaspberryPi_JetsonNano/python/server.py
+WorkingDirectory=/home/vasily/eink/e-Paper/RaspberryPi_JetsonNano/python
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -8,7 +8,8 @@ E-Ink Display for Raspberry Pi based on Waveshare e-Paper library and 4.2 inch e
 - Update images from the USB drive
 - update configuration from the USB drive
 - Connect to WiFi by updating the wifi.txt file in the USB drive
-- load the image from internet based on the configuration file
+- Load the image from internet based on the configuration file
+- Server to upload the images and update configuration. can be acessed on http://ip_address:8080
 
 ## Installation
 1. Install raspbian on a Raspberry Pi
@@ -69,6 +70,10 @@ network={
 ```
 
 ## Auto Start on Boot
+There are two service can be running on the start:
+- eink service
+- eink_update server
+
 1. Create a new systemd service file:
 ```bash
 sudo nano /lib/systemd/system/eink.service
