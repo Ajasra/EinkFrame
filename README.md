@@ -1,6 +1,6 @@
 
 # E-Ink Display
-
+E-Ink Display for Raspberry Pi based on Waveshare e-Paper library and 4.2 inch e-Paper display.
 
 ## Installation
 1. Install raspbian on a Raspberry Pi
