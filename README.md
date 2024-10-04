@@ -1,6 +1,7 @@
 
 # E-Ink Display
 E-Ink Display for Raspberry Pi based on Waveshare e-Paper library and 4.2 inch e-Paper display.
+![E-Ink Display](readme/frame.jpg)
 
 ## Installation
 1. Install raspbian on a Raspberry Pi
@@ -36,6 +37,7 @@ pip install RPi.GPIO requests Pillow numpy
 1. Connect the waveshare e-ink display to the Raspberry Pi
 2. Connect the button to the GND and PIN 32 (You can use another pin, but you need to change the code)
 3. Print the frame and attach the e-ink display to it
+![3D Model](readme/3d%20model.png)
 
 ## Configuration
 1. Update <b>settings.py</b> with the following information (You can use the example file)
