@@ -1,0 +1,7 @@
+{
+	"mode": 2,
+	"refresh_rate": 60,
+	"random": 1,
+	"url_config": "http://eink.vasily.onl/config/config.txt",
+	"url_image": "http://eink.vasily.onl/images/current/img.jpg"
+}

@@ -1,4 +1,4 @@
-#!/home/vasily/eink/e-Paper/RaspberryPi_JetsonNano/python/myenv/bin/python
+#!/usr/bin/python
 # -*- coding:utf-8 -*-
 import sys
 import os
@@ -32,12 +32,13 @@ import logging
 from waveshare_epd import epd4in2_V2
 import RPi.GPIO as GPIO
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
-BUTTON_PIN = 32
-GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+import settings
 
-mount_point = '/media/vasily'
+GPIO.setwarnings(settings.GPIO_WARNINGS)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(settings.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+mount_point = settings.MOUNT_POINT
 
 config = None
 last_modified_time = 0
@@ -45,12 +46,12 @@ last_update_image = 0
 last_network = 0
 
 mode = 0
-max_modes = 2
-previous_button_state = GPIO.input(32)
-hold_to_shutdown = 3
+previous_button_state = GPIO.input(settings.BUTTON_PIN)
 button_pressed_time = 0
 
-update_config_every = 3600
+update_config_every = settings.UPDATE_CONFIG_EVERY
+hold_to_shutdown = settings.HOLD_TO_SHUTDOWN
+max_modes = settings.MAX_MODES
 
 epd = epd4in2_V2.EPD()
 
@@ -157,7 +158,7 @@ def check_usb_content(mount_point):
                         wifi_config = wifi_file.read()
 
                     # Update the Wi-Fi configuration file
-                    wpa_supplicant_path = '/etc/wpa_supplicant/wpa_supplicant.conf'
+                    wpa_supplicant_path = settings.WIFI_CONFIG_PATH
                     with open(wpa_supplicant_path, 'a') as wpa_file:
                         wpa_file.write(wifi_config)
 
@@ -181,7 +182,6 @@ def check_usb_content(mount_point):
 def load_config_file():
     """
     Load the 'config.txt' file from the root directory of the current script.
-
     :return: The contents of the 'config.txt' file as a dictionary, or None if the file does not exist or cannot be loaded.
     """
     try:
@@ -353,14 +353,11 @@ def get_last_created_image(folder_path):
     """
     # Use glob to find all image files in the folder
     image_files = glob.glob(os.path.join(folder_path, '*.bmp'))
-
     if not image_files:
         logging.info("No image files found in the specified folder.")
         return False
-
     # Get the creation time of each image file and find the most recent one
     last_created_image = max(image_files, key=os.path.getctime)
-
     return last_created_image
 
 
@@ -373,27 +370,22 @@ def get_all_images(folder_path):
     """
     # Use glob to find all image files in the folder
     image_files = glob.glob(os.path.join(folder_path, '*.bmp'))
-
     return image_files
 
 
 def get_last_created_folder(directory_path):
     """
     Get the last created folder from the specified directory.
-
     :param directory_path: Path to the directory containing folders.
     :return: The last created folder path, or None if no folders are found.
     """
     # Get all directories in the specified path
     directories = [d for d in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, d))]
-
     if not directories:
         logging.info("No folders found in the specified directory.")
         return None
-
     # Get the creation time of each directory and find the most recent one
     last_created_folder = max(directories, key=lambda d: os.path.getctime(os.path.join(directory_path, d)))
-
     return os.path.join(directory_path, last_created_folder)
 
 
@@ -423,13 +415,11 @@ def show_next_image(cur, folder_name, rnd=False):
     """
     global last_update_image, config
     current_file_path = os.path.dirname(os.path.abspath(__file__))
-
     if folder_name == 'us':
         folder = os.path.join(current_file_path, folder_name)
     else:
         image_folder_path = os.path.join(current_file_path, folder_name)
         folder = get_last_created_folder(image_folder_path)
-
     images = get_all_images(folder)
     if images and images[cur]:
         Himage = Image.open(images[cur])
@@ -474,14 +464,12 @@ def show_info():
     draw.text((10, 0), 'Loading', font=font24, fill=0)
     ip_address = get_ip_address('wlan0')
     draw.text((10, 30), "ip: {}".format(ip_address), font=font24, fill=0)
-
     # print all config values in format key: value
     if config:
         y = 60
         for key, value in config.items():
             draw.text((10, y), f"{key}: {value}", font=font24, fill=0)
             y = y + 30
-
     epd.display(epd.getbuffer(Limage))
 
 
@@ -496,25 +484,23 @@ def show_mode_info():
         draw.text((10, 0), 'mode 1', font=font24, fill=0)
     elif mode == 2:
         draw.text((10, 0), 'mode 2', font=font24, fill=0)
-
     ip_address = get_ip_address('wlan0')
     draw.text((10, 30), ip_address, font=font24, fill=0)
-
     epd.display(epd.getbuffer(Limage))
     last_update_image = 0
-
     time.sleep(2)
 
 
 def read_button():
+    """
+    Read the state of the button and perform the appropriate action.
+    :return:
+    """
     global previous_button_state, mode, button_pressed_time, hold_to_shutdown
-
     button_state = GPIO.input(32)
-
     if button_state == GPIO.LOW:
         if button_pressed_time < time.time() and button_pressed_time != 0:
             shutdown_m()
-
     if button_state != previous_button_state:
         previous_button_state = button_state
         if button_state == GPIO.LOW:
@@ -531,23 +517,19 @@ def read_button():
 
 if __name__ == '__main__':
 
-    # os.system("sudo echo 'Script running with sudo privileges' > /var/log/startup_script.log")
-
     try:
         logging.info("Starting")
         random.seed(time.time())
         config = load_config_file()
-
         update_config(mount_point)
 
         logging.info("init and Clear")
         epd.init()
         epd.Clear()
         epd.init_fast(epd.Seconds_1_5S)
-
         show_info()
 
-        # time.sleep(10)
+        time.sleep(5)
         epd.Clear()
 
         rnd = False
@@ -556,17 +538,13 @@ if __name__ == '__main__':
         # setup mode on start, after switch with buttons
         if 'mode' in config and config['mode']:
             mode = config['mode']
-
         while True:
-
             if last_modified_time < time.time():
                 update_config()
                 if 'random' in config and config['random']:
                     rnd = True
-
             if 'refresh_rate' in config and config['refresh_rate']:
                 if last_update_image < time.time():
-
                     if mode == 0:
                         cur_image = show_next_image(cur_image, rnd)
                     elif mode == 1:
@@ -579,11 +557,8 @@ if __name__ == '__main__':
                             show_netimage()
                         else:
                             cur_image = show_next_image(cur_image, 'us', rnd)
-
-
             read_button()
             time.sleep(0.1)
-
 
     except IOError as e:
         logging.info(e)

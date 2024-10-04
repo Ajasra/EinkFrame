@@ -37,10 +37,20 @@ pip install RPi.GPIO requests Pillow numpy
 2. Connect the button to the GND and PIN 32 (You can use another pin, but you need to change the code)
 3. Print the frame and attach the e-ink display to it
 
-## Usage
+## Configuration
+1. Update <b>settings.py</b> with the following information (You can use the example file)
+2. You can use USB drive to update the images, just copy the images to the USB drive folder and plug it to the Raspberry Pi
+3. You can update the config file by copying the config file to the USB drive and plug it to the Raspberry Pi
+4. You can connect to WiFi by updating the wifi.txt file in the USB drive and plug it to the Raspberry Pi
+'wifi.txt' file should contain the following information
+```
+network={
+    ssid="YOUR_SSID"
+    ps="YOUR_PASSWORD"
+}
+```
 
-### Auto Start on Boot
-
+## Auto Start on Boot
 1. Create a new systemd service file:
 ```bash
 sudo nano /lib/systemd/system/eink.service
