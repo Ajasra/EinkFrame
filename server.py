@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import glob
+import subprocess
 
 from flask import Flask, request, render_template_string
 from PIL import Image
@@ -174,6 +175,12 @@ def home():
                 <input type="submit" value="Upload">
             </form>
         </div>
+        <h1>System Control</h1>
+        <div class="form-section">
+            <form method="POST" action="/reboot">
+                <input type="submit" value="Reboot">
+            </form>
+        </div>
     </div>
     '''
     return render_template_string(form_html, config=config, fields=fields)
@@ -216,6 +223,17 @@ def upload():
     Images uploaded successfully!<br>
     <a href="/">Return to Main Page</a>
     '''
+
+@app.route('/reboot', methods=['POST'])
+def reboot():
+    try:
+        subprocess.run(['sudo', 'reboot'], check=True)
+        return '''
+        Rebooting...<br>
+        <a href="/">Return to Main Page</a>
+        '''
+    except Exception as e:
+        return f"Error: {e}"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
