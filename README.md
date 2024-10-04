@@ -32,6 +32,11 @@ git clone https://github.com/Ajasra/EinkFrame.git
 pip install RPi.GPIO requests Pillow numpy
 ```
 
+## Assembly
+1. Connect the waveshare e-ink display to the Raspberry Pi
+2. Connect the button to the GND and PIN 32 (You can use another pin, but you need to change the code)
+3. Print the frame and attach the e-ink display to it
+
 ## Usage
 
 ### Auto Start on Boot
