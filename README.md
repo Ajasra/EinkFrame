@@ -3,6 +3,13 @@
 E-Ink Display for Raspberry Pi based on Waveshare e-Paper library and 4.2 inch e-Paper display.
 ![E-Ink Display](readme/frame.jpg)
 
+### Features
+- Play images from the local memory
+- Update images from the USB drive
+- update configuration from the USB drive
+- Connect to WiFi by updating the wifi.txt file in the USB drive
+- load the image from internet based on the configuration file
+
 ## Installation
 1. Install raspbian on a Raspberry Pi
 2. Update the system
@@ -43,9 +50,18 @@ pip install RPi.GPIO requests Pillow numpy
 1. Update <b>settings.py</b> with the following information (You can use the example file)
 2. You can use USB drive to update the images, just copy the images to the USB drive folder and plug it to the Raspberry Pi
 3. You can update the config file by copying the config file to the USB drive and plug it to the Raspberry Pi
-4. You can connect to WiFi by updating the wifi.txt file in the USB drive and plug it to the Raspberry Pi
-'wifi.txt' file should contain the following information
+```json
+{
+	"mode": 2,
+	"refresh_rate": 60,
+	"random": 1,
+	"url_config": "http://eink.vasily.onl/config/config.txt",
+	"url_image": "http://eink.vasily.onl/images/current/img.jpg"
+}
 ```
+5. You can connect to WiFi by updating the wifi.txt file in the USB drive and plug it to the Raspberry Pi
+'wifi.txt' file should contain the following information
+```json
 network={
     ssid="YOUR_SSID"
     ps="YOUR_PASSWORD"
