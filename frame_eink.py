@@ -63,10 +63,12 @@ def shutdown_m():
     Shutdown the Raspberry Pi.
     :return:
     """
+    epd4in2_V2.epdconfig.module_exit(cleanup=True)
+    GPIO.cleanup()
     subprocess.run(['sudo', 'shutdown', '-h', 'now'])
 
 
-def is_usb_device_mounted(mount_point):
+def is_usb_device_mounted():
     """
     Check if a USB device is mounted in the /media/vasily directory.
 
@@ -83,25 +85,25 @@ def is_usb_device_mounted(mount_point):
     return False
 
 
-def check_usb_content(mount_point):
+def check_usb_content():
     """
     Check if the 'images' folder and 'config.txt' and 'wifi.txt' files exist on the USB device mounted in /media/vasily.
 
     :return: A dictionary indicating the presence of each item.
     """
-    device_name = is_usb_device_mounted(mount_point)
+    device_name = is_usb_device_mounted()
     if device_name:
         logging.info("device connected: {}".format(device_name))
 
-        mount_point = "{}/{}".format(mount_point, device_name)
-        usb_images_folder = os.path.join(mount_point, 'images')
-        wifi_file_path = os.path.join(mount_point, 'wifi.txt')
-        config_file_path = os.path.join(mount_point, 'config.txt')
+        usb_drive = "{}/{}".format(mount_point, device_name)
+        usb_images_folder = os.path.join(usb_drive, 'images')
+        wifi_file_path = os.path.join(usb_drive, 'wifi.txt')
+        config_file_path = os.path.join(usb_drive, 'config.txt')
 
         # Check if the mount point exists and is a directory
-        if os.path.exists(mount_point) and os.path.isdir(mount_point):
+        if os.path.exists(usb_drive) and os.path.isdir(usb_drive):
             # List the contents of the mount point
-            contents = os.listdir(mount_point)
+            contents = os.listdir(usb_drive)
 
             # Check if the 'images' folder exists on the USB device
             if os.path.exists(usb_images_folder) and os.path.isdir(usb_images_folder):
@@ -166,7 +168,7 @@ def check_usb_content(mount_point):
                     subprocess.run(['sudo', 'wpa_cli', 'reconfigure'], check=True)
 
                     logging.info("wifi updated")
-                    os.rename(wifi_file_path, os.path.join(mount_point, 'wifi_processed.txt'))
+                    os.rename(wifi_file_path, os.path.join(usb_drive, 'wifi_processed.txt'))
 
                 except Exception as e:
                     logging.info(f"Error updating Wi-Fi settings: {e}")
@@ -188,7 +190,6 @@ def load_config_file():
         # Get the path of the current Python file
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         config_file_path = os.path.join(current_file_path, 'config.txt')
-
         # Check if the 'config.txt' file exists
         if os.path.exists(config_file_path) and os.path.isfile(config_file_path):
             # Load the contents of the 'config.txt' file
@@ -204,11 +205,9 @@ def load_config_file():
         return None
 
 
-def copy_image_from_url(config):
+def copy_image_from_url():
     """
     Copy an image from a URL specified in the 'config.txt' file to the 'netimage' folder within the script's root directory.
-
-    :param config: The configuration dictionary loaded from 'config.txt'.
     :return: True if the image is copied successfully, False otherwise.
     """
     try:
@@ -258,40 +257,31 @@ def process_and_save_image(image_path):
     try:
         # Load the image
         image = Image.open(image_path)
-
         # Get the original image size
         original_width, original_height = image.size
-
         # Calculate the scaling factor to maximize the crop area
         if original_width < original_height:
             scale_factor = 300 / original_width
         else:
             scale_factor = 400 / original_height
-
         # Scale the image
         scaled_width = int(original_width * scale_factor)
         scaled_height = int(original_height * scale_factor)
         scaled_image = image.resize((scaled_width, scaled_height), Image.ANTIALIAS)
-
         # Calculate the crop box to center the image
         left = (scaled_width - 300) / 2
         top = (scaled_height - 400) / 2
         right = (scaled_width + 300) / 2
         bottom = (scaled_height + 400) / 2
-
         # Crop the image to 300x400 pixels
         cropped_image = scaled_image.crop((left, top, right, bottom))
-
         # Convert the image to black and white
         bw_image = cropped_image.convert('1')
-
         # Save the image as a 16-bit BMP file
         bmp_image_path = os.path.splitext(image_path)[0] + '.bmp'
         bw_image.save(bmp_image_path, 'BMP')
-
         # Delete the original file
         os.remove(image_path)
-
         logging.info('image converted')
         return True
     except Exception as e:
@@ -306,7 +296,6 @@ def process_all_images_in_folder(folder_path):
     :param folder_path: The path to the folder containing the images.
     :return: True if all images are processed and saved successfully, False otherwise.
     """
-
     current_file_path = os.path.dirname(os.path.abspath(__file__))
     folder_path = os.path.join(current_file_path, folder_path)
     try:
@@ -327,27 +316,24 @@ def process_all_images_in_folder(folder_path):
         return False
 
 
-def update_config(mount_point):
+def update_config():
     """
     Update the configuration settings from the 'config.txt' file and process any new images from the USB device.
     :return:
     """
     global config, last_modified_time, update_config_every
-
-    check_usb_content(mount_point)
+    check_usb_content()
     config = load_config_file()
     if config:
-        new_image = copy_image_from_url(config)
+        new_image = copy_image_from_url()
         if new_image:
             process_all_images_in_folder('netimage')
-
     last_modified_time = time.time() + update_config_every
 
 
 def get_last_created_image(folder_path):
     """
     Get the last created image from the specified folder.
-
     :param folder_path: Path to the folder containing images.
     :return: The last created image file path, or None if no images are found.
     """
@@ -364,7 +350,6 @@ def get_last_created_image(folder_path):
 def get_all_images(folder_path):
     """
     Get all image files from the specified folder.
-
     :param folder_path: Path to the folder containing images.
     :return: A list of image file paths, or an empty list if no images are found.
     """
@@ -394,7 +379,8 @@ def show_netimage():
     Display the last created image from the 'netimage' folder.
     :return:
     """
-    global last_network, config
+    global last_network, config, last_update_image
+
     current_file_path = os.path.dirname(os.path.abspath(__file__))
     netimage_folder_path = os.path.join(current_file_path, 'netimage')
     image = get_last_created_image(netimage_folder_path)
@@ -405,12 +391,12 @@ def show_netimage():
     last_update_image = time.time() + config['refresh_rate'] * 2
 
 
-def show_next_image(cur, folder_name, rnd=False):
+def show_next_image(cur, folder_name, rand=False):
     """
     Display the next image from the specified folder.
+    :param rand:
     :param cur:
     :param folder_name:
-    :param rnd:
     :return:
     """
     global last_update_image, config
@@ -424,9 +410,10 @@ def show_next_image(cur, folder_name, rnd=False):
     if images and images[cur]:
         Himage = Image.open(images[cur])
         epd.display(epd.getbuffer(Himage))
-        if rnd:
+        if rand:
             random.seed(time.time())
             cur = random.randint(0, len(images) - 1)
+            print(f"rand: {cur}")
         else:
             cur = cur + 1
             if cur >= len(images):
@@ -435,7 +422,7 @@ def show_next_image(cur, folder_name, rnd=False):
     return cur
 
 
-def get_ip_address(ifname):
+def get_ip_address(ifname='wlan0'):
     """
     Get the current IP address of the specified network interface.
     :param ifname: The name of the network interface (e.g., 'eth0' or 'wlan0').
@@ -457,35 +444,25 @@ def show_info():
     Display the current IP address on the e-ink display.
     :return:
     """
-    global epd, config
-    font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
+    global epd, config, last_update_image
+
+    font16 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 16)
     Limage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
     draw = ImageDraw.Draw(Limage)
-    draw.text((10, 0), 'Loading', font=font24, fill=0)
+    if mode == 0:
+        draw.text((10, 0), 'Uploaded images', font=font16, fill=0)
+    elif mode == 1:
+        draw.text((10, 0), 'Uploaded images + online', font=font16, fill=0)
+    elif mode == 2:
+        draw.text((10, 0), 'US', font=font16, fill=0)
     ip_address = get_ip_address('wlan0')
-    draw.text((10, 30), "ip: {}".format(ip_address), font=font24, fill=0)
+    draw.text((10, 30), "ip: {}".format(ip_address), font=font16, fill=0)
     # print all config values in format key: value
     if config:
         y = 60
         for key, value in config.items():
-            draw.text((10, y), f"{key}: {value}", font=font24, fill=0)
+            draw.text((10, y), f"{key}: {value}", font=font16, fill=0)
             y = y + 30
-    epd.display(epd.getbuffer(Limage))
-
-
-def show_mode_info():
-    global epd, last_update_image
-    font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
-    Limage = Image.new('1', (epd.height, epd.width), 255)  # 255: clear the frame
-    draw = ImageDraw.Draw(Limage)
-    if mode == 0:
-        draw.text((10, 0), 'mode 0', font=font24, fill=0)
-    elif mode == 1:
-        draw.text((10, 0), 'mode 1', font=font24, fill=0)
-    elif mode == 2:
-        draw.text((10, 0), 'mode 2', font=font24, fill=0)
-    ip_address = get_ip_address('wlan0')
-    draw.text((10, 30), ip_address, font=font24, fill=0)
     epd.display(epd.getbuffer(Limage))
     last_update_image = 0
     time.sleep(2)
@@ -494,6 +471,8 @@ def show_mode_info():
 def read_button():
     """
     Read the state of the button and perform the appropriate action.
+    - short press: switch to the next mode
+    - long press: shutdown the Raspberry Pi
     :return:
     """
     global previous_button_state, mode, button_pressed_time, hold_to_shutdown
@@ -512,7 +491,7 @@ def read_button():
             mode = mode + 1
             if mode > max_modes:
                 mode = 0
-            show_mode_info()
+            show_info()
 
 
 if __name__ == '__main__':
@@ -521,7 +500,7 @@ if __name__ == '__main__':
         logging.info("Starting")
         random.seed(time.time())
         config = load_config_file()
-        update_config(mount_point)
+        update_config()
 
         logging.info("init and Clear")
         epd.init()
@@ -538,6 +517,7 @@ if __name__ == '__main__':
         # setup mode on start, after switch with buttons
         if 'mode' in config and config['mode']:
             mode = config['mode']
+
         while True:
             if last_modified_time < time.time():
                 update_config()
@@ -546,7 +526,7 @@ if __name__ == '__main__':
             if 'refresh_rate' in config and config['refresh_rate']:
                 if last_update_image < time.time():
                     if mode == 0:
-                        cur_image = show_next_image(cur_image, rnd)
+                        cur_image = show_next_image(cur_image, 'images', rnd)
                     elif mode == 1:
                         if last_network < time.time():
                             show_netimage()
@@ -564,6 +544,7 @@ if __name__ == '__main__':
         logging.info(e)
 
     except KeyboardInterrupt:
+        # stop the program
         logging.info("ctrl + c:")
         epd4in2_V2.epdconfig.module_exit(cleanup=True)
         GPIO.cleanup()
