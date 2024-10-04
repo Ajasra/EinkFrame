@@ -74,17 +74,17 @@ There are two service can be running on the start:
 - eink service
 - eink_update server
 
-1. Create a new systemd service file:
-```bash
-sudo nano /lib/systemd/system/eink.service
-```
+
+1. Change the path in the ```eink.service``` and ```server.service``` files to the path of the ```frame_eink.py``` and ```server.service``` file and copy them to the ```/etc/systemd/system/``` directory
 2. Enable the service to start on boot:
 ```bash
 sudo systemctl enable my_script.service
+sudo systemctl enable server.service
 ```
 3. Start the service:
 ```bash
 sudo systemctl start my_script.service
+sudo systemctl start server.service
 ```
 4. To stop the service for changes:
 ```bash
