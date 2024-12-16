@@ -1,7 +1,7 @@
 # E-Ink Display
 
 E-Ink Display for Raspberry Pi based on Waveshare e-Paper library and 4.2 inch e-Paper display.
-![E-Ink Display](readme/frame.jpg)
+![E-Ink Display](Extra/images/frame.jpg)
 
 ## Table of Contents
 1. [Basic Setup](#basic-setup)
