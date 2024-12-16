@@ -1,15 +1,22 @@
-
 # E-Ink Display
+
 E-Ink Display for Raspberry Pi based on Waveshare e-Paper library and 4.2 inch e-Paper display.
 ![E-Ink Display](readme/frame.jpg)
 
-### Features
-- Play images from the local memory
-- Update images from the USB drive
-- update configuration from the USB drive
-- Connect to WiFi by updating the wifi.txt file in the USB drive
-- Load the image from internet based on the configuration file
-- Server to upload the images and update configuration. can be acessed on http://ip_address:8080
+## Table of Contents
+1. [Basic Setup](#basic-setup)
+2. [TouchDesigner Setup](#touchdesigner-setup)
+3. [Synchronized Frames Setup](#synchronized-frames-setup)
+4. [Installation](#installation)
+5. [Assembly](#assembly)
+6. [Configuration](#configuration)
+7. [Auto Start on Boot](#auto-start-on-boot)
+
+## Basic Setup
+This setup is the standard configuration for displaying images on the E-Ink display.
+
+## Basic Setup
+This setup is the standard configuration for displaying images on the E-Ink display.
 
 ## Installation
 1. Install raspbian on a Raspberry Pi
@@ -51,18 +58,9 @@ pip install RPi.GPIO requests Pillow numpy
 1. Update <b>settings.py</b> with the following information (You can use the example file)
 2. You can use USB drive to update the images, just copy the images to the USB drive folder and plug it to the Raspberry Pi
 3. You can update the config file by copying the config file to the USB drive and plug it to the Raspberry Pi
-```json
-{
-	"mode": 2,
-	"refresh_rate": 60,
-	"random": 1,
-	"url_config": "http://eink.vasily.onl/config/config.txt",
-	"url_image": "http://eink.vasily.onl/images/current/img.jpg"
-}
-```
-5. You can connect to WiFi by updating the wifi.txt file in the USB drive and plug it to the Raspberry Pi
+4. You can connect to WiFi by updating the wifi.txt file in the USB drive and plug it to the Raspberry Pi
 'wifi.txt' file should contain the following information
-```json
+```
 network={
     ssid="YOUR_SSID"
     ps="YOUR_PASSWORD"
@@ -70,21 +68,17 @@ network={
 ```
 
 ## Auto Start on Boot
-There are two service can be running on the start:
-- eink service
-- eink_update server
-
-
-1. Change the path in the ```eink.service``` and ```server.service``` files to the path of the ```frame_eink.py``` and ```server.service``` file and copy them to the ```/etc/systemd/system/``` directory
+1. Create a new systemd service file:
+```bash
+sudo nano /lib/systemd/system/eink.service
+```
 2. Enable the service to start on boot:
 ```bash
 sudo systemctl enable my_script.service
-sudo systemctl enable server.service
 ```
 3. Start the service:
 ```bash
 sudo systemctl start my_script.service
-sudo systemctl start server.service
 ```
 4. To stop the service for changes:
 ```bash
